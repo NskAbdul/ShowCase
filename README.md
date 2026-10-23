@@ -2,7 +2,7 @@
 
 > **Enterprise-grade, cloud-native smart governance platform delivering citizen grievance tracking with SLA enforcement, digital certificate pipelines, welfare disbursement, and municipal analytics.**
 
-[![Java](https://img.shields.io/badge/Java-25-orange.svg?logo=openjdk)](https://openjdk.org/)
+[![Java](https://img.shields.io/badge/Java-17-orange.svg?logo=openjdk)](https://openjdk.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5.16-brightgreen.svg?logo=springboot)](https://spring.io/projects/spring-boot)
 [![Spring Cloud](https://img.shields.io/badge/Spring_Cloud-2025.0.3-blue.svg)](https://spring.io/projects/spring-cloud)
 [![React](https://img.shields.io/badge/React-19.2.8-61dafb.svg?logo=react)](https://react.dev/)
