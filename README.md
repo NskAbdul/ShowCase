@@ -127,82 +127,101 @@ CivicPulse Nexus employs an ingress-routed, service-oriented architecture. All i
 ### Architecture Topology Diagram
 
 ```mermaid
-graph TD
-    Client["Browser Client<br/>(React 19 + Vite 8)"]
+flowchart TD
+    Client["Browser Client (React 19 and Vite 8)"]
 
-    subgraph Ingress ["API Gateway Layer"]
-        Gateway["Spring Cloud Gateway<br/>(Port 8084)"]
+    subgraph Ingress["API Gateway Layer"]
+        Gateway["Spring Cloud Gateway - Port 8084"]
     end
 
-    subgraph ServiceRegistry ["Discovery & Configuration"]
-        Eureka["Eureka Server<br/>(Port 8761)"]
-        Config["Config Server<br/>(Port 8888)"]
+    subgraph Registry["Discovery and Configuration"]
+        Eureka["Eureka Server - Port 8761"]
+        Config["Config Server - Port 8888"]
     end
 
-    subgraph Identity ["Identity & Access Management"]
-        Keycloak["Keycloak IAM<br/>(Port 8080)<br/>Realm: civicpulse"]
+    subgraph Identity["Identity and Access Management"]
+        Keycloak["Keycloak IAM - Port 8080 - Realm civicpulse"]
     end
 
-    subgraph CoreServices ["Business Microservices"]
-        UserSvc["user-service (8081)"]
-        CitizenSvc["citizen-service (8082)"]
-        GrievanceSvc["grievance-service (8083)"]
-        DeptSvc["department-service (8086)"]
-        CertSvc["service-management-service (8087)"]
-        WelfareSvc["welfare-service (8088)"]
-        BudgetSvc["budget-service (8089)"]
-        ReportingSvc["reporting-service (8090)"]
+    subgraph Services["Business Microservices"]
+        UserSvc["User Service - 8081"]
+        CitizenSvc["Citizen Service - 8082"]
+        GrievanceSvc["Grievance Service - 8083"]
+        DeptSvc["Department Service - 8086"]
+        CertSvc["Service Management Service - 8087"]
+        WelfareSvc["Welfare Service - 8088"]
+        BudgetSvc["Budget Service - 8089"]
+        ReportingSvc["Reporting Service - 8090"]
     end
 
-    subgraph Messaging ["Event Streaming"]
-        Kafka["Apache Kafka (9092)<br/>Topics: grievance-events, grievance-notifications"]
+    subgraph Messaging["Event Streaming"]
+        Kafka["Apache Kafka - Port 9092"]
     end
 
-    subgraph Persistence ["PostgreSQL 16 (Port 5432)"]
-        DB_User[("user_db")]
-        DB_Citizen[("citizen_db")]
-        DB_Grievance[("grievance_db")]
-        DB_Dept[("department_db")]
-        DB_Service[("service_db")]
-        DB_Welfare[("welfare_db")]
-        DB_Budget[("budget_db")]
+    subgraph Persistence["PostgreSQL 16 - Port 5432"]
+        DBUser[("user_db")]
+        DBCitizen[("citizen_db")]
+        DBGrievance[("grievance_db")]
+        DBDept[("department_db")]
+        DBService[("service_db")]
+        DBWelfare[("welfare_db")]
+        DBBudget[("budget_db")]
     end
 
-    Client -->|HTTP REST + Bearer Token| Gateway
+    Client -->|"HTTP REST and Bearer Token"| Gateway
 
-    Gateway -->|lb://USER-SERVICE| UserSvc
-    Gateway -->|lb://CITIZEN-SERVICE| CitizenSvc
-    Gateway -->|lb://GRIEVANCE-SERVICE| GrievanceSvc
-    Gateway -->|lb://DEPARTMENT-SERVICE| DeptSvc
-    Gateway -->|lb://SERVICE-MANAGEMENT-SERVICE| CertSvc
-    Gateway -->|lb://WELFARE-SERVICE| WelfareSvc
-    Gateway -->|lb://BUDGET-SERVICE| BudgetSvc
-    Gateway -->|lb://REPORTING-SERVICE| ReportingSvc
+    Gateway -->|"USER-SERVICE"| UserSvc
+    Gateway -->|"CITIZEN-SERVICE"| CitizenSvc
+    Gateway -->|"GRIEVANCE-SERVICE"| GrievanceSvc
+    Gateway -->|"DEPARTMENT-SERVICE"| DeptSvc
+    Gateway -->|"SERVICE-MANAGEMENT-SERVICE"| CertSvc
+    Gateway -->|"WELFARE-SERVICE"| WelfareSvc
+    Gateway -->|"BUDGET-SERVICE"| BudgetSvc
+    Gateway -->|"REPORTING-SERVICE"| ReportingSvc
 
-    CoreServices -.->|Heartbeat Registration| Eureka
-    Gateway -.->|Dynamic Route Discovery| Eureka
-    CoreServices -.->|Fetch Configuration Properties| Config
+    UserSvc -.->|"Registration and heartbeat"| Eureka
+    CitizenSvc -.->|"Registration and heartbeat"| Eureka
+    GrievanceSvc -.->|"Registration and heartbeat"| Eureka
+    DeptSvc -.->|"Registration and heartbeat"| Eureka
+    CertSvc -.->|"Registration and heartbeat"| Eureka
+    WelfareSvc -.->|"Registration and heartbeat"| Eureka
+    BudgetSvc -.->|"Registration and heartbeat"| Eureka
+    ReportingSvc -.->|"Registration and heartbeat"| Eureka
+    Gateway -.->|"Dynamic route discovery"| Eureka
 
-    UserSvc -->|Admin Client Provisioning & Login| Keycloak
-    CitizenSvc -->|OAuth2 JWT Verification| Keycloak
-    GrievanceSvc -->|OAuth2 JWT Verification| Keycloak
-    DeptSvc -->|OAuth2 JWT Verification| Keycloak
+    UserSvc -.->|"Fetch configuration"| Config
+    CitizenSvc -.->|"Fetch configuration"| Config
+    GrievanceSvc -.->|"Fetch configuration"| Config
+    DeptSvc -.->|"Fetch configuration"| Config
+    CertSvc -.->|"Fetch configuration"| Config
+    WelfareSvc -.->|"Fetch configuration"| Config
+    BudgetSvc -.->|"Fetch configuration"| Config
+    ReportingSvc -.->|"Fetch configuration"| Config
 
-    CitizenSvc -->|OpenFeign: GET /api/users/{id}| UserSvc
-    GrievanceSvc -->|OpenFeign: GET /api/citizens/{id}| CitizenSvc
-    GrievanceSvc -->|OpenFeign: GET /api/departments & /api/officers/{id}| DeptSvc
-    ReportingSvc -->|OpenFeign Aggregation| CitizenSvc & GrievanceSvc & BudgetSvc & CertSvc
+    UserSvc -->|"Admin client and login"| Keycloak
+    CitizenSvc -.->|"JWT verification"| Keycloak
+    GrievanceSvc -.->|"JWT verification"| Keycloak
+    DeptSvc -.->|"JWT verification"| Keycloak
 
-    GrievanceSvc -->|Produce Events & SLA Breaches| Kafka
-    Kafka -->|Consume Notifications| GrievanceSvc
+    CitizenSvc -->|"OpenFeign: GET user by ID"| UserSvc
+    GrievanceSvc -->|"OpenFeign: GET citizen by ID"| CitizenSvc
+    GrievanceSvc -->|"OpenFeign: GET departments and officers"| DeptSvc
 
-    UserSvc --> DB_User
-    CitizenSvc --> DB_Citizen
-    GrievanceSvc --> DB_Grievance
-    DeptSvc --> DB_Dept
-    CertSvc --> DB_Service
-    WelfareSvc --> DB_Welfare
-    BudgetSvc --> DB_Budget
+    ReportingSvc -->|"Citizen count requests"| CitizenSvc
+    ReportingSvc -->|"Grievance report requests"| GrievanceSvc
+    ReportingSvc -->|"Budget report requests"| BudgetSvc
+    ReportingSvc -->|"Certificate report requests"| CertSvc
+
+    GrievanceSvc -->|"Publish grievance events and SLA breaches"| Kafka
+    Kafka -->|"Deliver notification events"| GrievanceSvc
+
+    UserSvc --> DBUser
+    CitizenSvc --> DBCitizen
+    GrievanceSvc --> DBGrievance
+    DeptSvc --> DBDept
+    CertSvc --> DBService
+    WelfareSvc --> DBWelfare
+    BudgetSvc --> DBBudget
 ```
 
 ### Implemented Workflow Sequence Diagram
